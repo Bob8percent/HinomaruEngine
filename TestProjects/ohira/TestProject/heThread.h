@@ -37,14 +37,17 @@ namespace he
 			// m_tContのためのロック
 			std::unique_lock<he::thread_mutex> lk(m_mutex);
 
-			// カウンタが0ならロック中のスレッドを1つ起こす
-			if (m_tCnt == 0)
+			// セマフォを1つ解放
+			// NOTE: 先に加算しないとtake()が1フレーム遅れる
+			++m_tCnt;
+
+			// 以前のカウンタが0ならロック中のスレッドを1つ起こす
+			if (m_tCnt == 1)
 			{
 				m_cond.notify_one();
 			}
 
-			// セマフォを1つ解放
-			++m_tCnt;
+
 		}
 	private:
 		he::u32 m_tCnt;
